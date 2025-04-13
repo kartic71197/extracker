@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Modal from "./Modal";
 
@@ -13,27 +13,32 @@ function App() {
   const [expenseDate, setExpenseDate] = useState("");
   const [transactions, setTransactions] = useState([]);
 
+  useEffect(() => {
+    const data = localStorage.getItem("expenses");
+    if (data) {
+      setTransactions(JSON.parse(data));
+    }
+  }, []);
+
   const addExpense = () => {
     if(expenseAmount > wallet) {
       alert("You do not have enough balance");
     }
-    else {
-      setWallet(wallet - parseInt(expenseAmount));
-      setIsExpenseModalOpen(false);
-      setTransactions([
-        ...transactions,
-        {
-          title,
-          amount: parseInt(expenseAmount),
-          category: expenseCategory,
-          date: expenseDate,
-        },
-      ]);
-      setTitle("");
-      setExpenseAmount("");
-      setExpenseCategory("");
-      setExpenseDate("");
-    }
+    const newTransaction = {
+      title,
+      amount: parseInt(expenseAmount),
+      category: expenseCategory,
+      date: expenseDate,
+    };
+    const updatedTransactions = [...transactions, newTransaction];
+    setTransactions(updatedTransactions);
+    setWallet(wallet - parseInt(expenseAmount));
+    setIsExpenseModalOpen(false);
+    setTitle("");
+    setExpenseAmount("");
+    setExpenseCategory("");
+    setExpenseDate("");
+    localStorage.setItem("expenses", JSON.stringify(updatedTransactions));
   }
   return (
     <>
@@ -81,7 +86,7 @@ function App() {
         <div className="grid grid-cols-3 rounded-lg p-3 gap-6">
           <div className="col-span-2">
             <div className="text-2xl text-white font-normal text-start p-3">
-              Recent Transaction
+              Recent Transactions
             </div>
             <div className="col-span-2 bg-gray-200 rounded-lg p-6 shadow gap-6 flex flex-col items-center justify-center">
               {transactions.length > 0 ? (
@@ -195,8 +200,8 @@ function App() {
                 required
               />
               <select name="category" id="category"
-               onChange={(e) => setExpenseCategory(e.target.value)}
-               required>
+                onChange={(e) => setExpenseCategory(e.target.value)}
+                required>
                 <option value="">Select Category</option>
                 <option value="Food">Food</option>
                 <option value="Transport">Transport</option>
@@ -204,6 +209,7 @@ function App() {
                 <option value="Shopping">Shopping</option>
                 <option value="Health">Health</option>
                 <option value="Education">Education</option>
+                <option value="Travel">Other</option>
                 <option value="Other">Other</option>
               </select>
   
